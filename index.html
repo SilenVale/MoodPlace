@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>心境探店 · MoodPlace</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg1: #0f0f1a;
+    --bg2: #1a1a2e;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --text: #f0f0f0;
+    --text2: #aaa;
+    --card-bg: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.1);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+    background: var(--bg1);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    transition: background 0.8s ease;
+  }
+  .screen.active { display: flex; }
+
+  /* ─── SPLASH ─── */
+  #screen-splash {
+    text-align: center;
+    gap: 24px;
+  }
+  .splash-icon {
+    font-size: 72px;
+    animation: floatIcon 3s ease-in-out infinite;
+  }
+  @keyframes floatIcon {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .splash-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    background: linear-gradient(120deg, #a78bfa, #f0abfc, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .splash-sub {
+    font-size: 15px;
+    color: var(--text2);
+    letter-spacing: 2px;
+  }
+  .splash-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .splash-btn {
+    margin-top: 16px;
+    padding: 14px 48px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .splash-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,0.5); }
+  .splash-btn:active { transform: translateY(0); }
+
+  /* ─── INPUT ─── */
+  #screen-input {
+    gap: 20px;
+    max-width: 480px;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 60px;
+  }
+  .input-header {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .input-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .input-header p {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 6px;
+  }
+
+  /* emotion selector */
+  .emotion-label {
+    font-size: 13px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .emotion-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  .emotion-chip {
+    padding: 12px 8px;
+    border-radius: 14px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .emotion-chip .chip-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .emotion-chip:hover { border-color: var(--accent); color: var(--text); background: rgba(124,58,237,0.15); }
+  .emotion-chip.selected {
+    border-color: var(--accent);
+    background: rgba(124,58,237,0.25);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(124,58,237,0.3);
+  }
+
+  /* text input */
+  .mood-input-wrap { width: 100%; position: relative; }
+  .mood-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .mood-textarea::placeholder { color: rgba(255,255,255,0.25); }
+  .mood-textarea:focus { border-color: var(--accent); }
+
+  /* city input */
+  .city-row { display: flex; gap: 10px; width: 100%; align-items: center; }
+  .city-input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .city-input::placeholder { color: rgba(255,255,255,0.25); }
+  .city-input:focus { border-color: var(--accent); }
+
+  /* go button */
+  .go-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 28px rgba(124,58,237,0.35);
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .go-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(124,58,237,0.45); }
+  .go-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* history shortcut */
+  .history-link {
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-align: center;
+  }
+  .history-link:hover { color: var(--text); }
+
+  /* ─── LOADING ─── */
+  #screen-loading {
+    gap: 32px;
+    text-align: center;
+  }
+  .loading-mood-tag {
+    font-size: 13px;
+    color: var(--text2);
+    letter-spacing: 1px;
+  }
+  .loading-mood-tag span {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  /* pipeline steps */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .pipe-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    transition: all 0.4s;
+  }
+  .pipe-step.active {
+    border-color: var(--accent);
+    background: rgba(124,58,237,0.15);
+    box-shadow: 0 0 20px rgba(124,58,237,0.2);
+  }
+  .pipe-step.done {
+    border-color: rgba(16,185,129,0.5);
+    background: rgba(16,185,129,0.08);
+  }
+  .pipe-icon { font-size: 24px; min-width: 32px; text-align: center; }
+  .pipe-text { flex: 1; text-align: left; }
+  .pipe-text h4 { font-size: 14px; font-weight: 600; }
+  .pipe-text p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .pipe-status { font-size: 18px; }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-tip {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  /* ─── RESULTS ─── */
+  #screen-results {
+    justify-content: flex-start;
+    padding-top: 32px;
+    gap: 0;
+    max-width: 520px;
+    width: 100%;
+  }
+  .results-header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .results-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .emotion-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .emotion-summary {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 8px;
+    line-height: 1.6;
+    padding: 0 12px;
+  }
+
+  /* venue cards */
+  .venue-cards {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .venue-card {
+    border-radius: 20px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .venue-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .venue-img-wrap {
+    width: 100%;
+    height: 180px;
+    background: rgba(255,255,255,0.04);
+    position: relative;
+    overflow: hidden;
+  }
+  .venue-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+  }
+  .venue-img.loading { opacity: 0; }
+  .venue-img.loaded { opacity: 1; }
+  .img-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .img-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.2);
+    font-size: 12px;
+  }
+  .img-placeholder .ph-icon { font-size: 32px; }
+  .img-gen-status {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.4);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .venue-body { padding: 16px; }
+  .venue-index {
+    font-size: 11px;
+    color: var(--accent2);
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .venue-name {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .venue-address {
+    font-size: 12px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .venue-reason {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    border-left: 3px solid var(--accent);
+    margin-bottom: 14px;
+  }
+  .venue-type-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: var(--text2);
+    margin-bottom: 14px;
+  }
+  .go-btn-card {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .go-btn-card:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* results footer */
+  .results-footer {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+  .btn-secondary {
+    flex: 1;
+    padding: 13px;
+    border-radius: 14px;
+    border: 1.5px solid var(--card-border);
+    background: transparent;
+    color: var(--text2);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    letter-spacing: 1px;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--text); background: rgba(124,58,237,0.1); }
+
+  /* memory banner */
+  .memory-banner {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.3);
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .memory-banner.hidden { display: none; }
+
+  /* ─── HISTORY ─── */
+  #screen-history {
+    justify-content: flex-start;
+    padding-top: 40px;
+    gap: 16px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .history-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+  .history-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
+  .back-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .history-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .history-item {
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .history-item:hover { border-color: var(--accent); background: rgba(124,58,237,0.1); }
+  .history-item-icon { font-size: 24px; min-width: 32px; text-align: center; }
+  .history-item-body { flex: 1; }
+  .history-item-body h4 { font-size: 14px; font-weight: 600; }
+  .history-item-body p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .history-item-meta { font-size: 11px; color: rgba(255,255,255,0.25); text-align: right; }
+
+  .history-empty {
+    text-align: center;
+    color: var(--text2);
+    font-size: 14px;
+    padding: 40px 0;
+  }
+  .history-empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ─── EMOTION THEME OVERRIDES ─── */
+  body.theme-tired { --bg1: #0d0d1a; --bg2: #1a1428; --accent: #7c3aed; --accent2: #a855f7; }
+  body.theme-excited { --bg1: #1a0800; --bg2: #3d1a00; --accent: #ea580c; --accent2: #f97316; }
+  body.theme-anxious { --bg1: #150520; --bg2: #2d0b3d; --accent: #9333ea; --accent2: #c084fc; }
+  body.theme-calm { --bg1: #041a10; --bg2: #0a2a1a; --accent: #059669; --accent2: #34d399; }
+  body.theme-sad { --bg1: #091520; --bg2: #0c1a2e; --accent: #2563eb; --accent2: #60a5fa; }
+  body.theme-romantic { --bg1: #1a0310; --bg2: #350520; --accent: #db2777; --accent2: #f472b6; }
+
+  /* ─── ERROR TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #ef4444;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    max-width: 340px;
+    text-align: center;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── VAD PANEL (情绪解析面板) ─── */
+  .vad-panel {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 16px;
+  }
+  .vad-panel-title {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vad-rows { display: flex; flex-direction: column; gap: 8px; }
+  .vad-row { display: flex; align-items: center; gap: 10px; }
+  .vad-label { font-size: 12px; color: var(--text2); min-width: 72px; }
+  .vad-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .vad-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.8s ease;
+  }
+  .vad-bar.valence { background: linear-gradient(90deg, #f472b6, #a78bfa); }
+  .vad-bar.arousal  { background: linear-gradient(90deg, #fb923c, #fbbf24); }
+  .vad-bar.dominance{ background: linear-gradient(90deg, #34d399, #60a5fa); }
+  .vad-value { font-size: 11px; color: rgba(255,255,255,0.3); min-width: 24px; text-align: right; }
+  .vad-space-needs {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    padding: 8px 10px;
+    background: rgba(124,58,237,0.1);
+    border-radius: 8px;
+    border-left: 2px solid var(--accent);
+    line-height: 1.5;
+  }
+  .context-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.4);
+    margin-top: 6px;
+    margin-right: 6px;
+  }
+
+  /* ─── CHECKIN (访后打卡) ─── */
+  .checkin-area {
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 10px;
+  }
+  .checkin-prompt {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .checkin-emotions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .checkin-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .checkin-chip:hover { border-color: var(--accent); color: var(--text); background: rgba(124,58,237,0.15); }
+  .checkin-done {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    padding: 6px 0;
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ SPLASH ═══════════════════════════════════════ -->
+<div id="screen-splash" class="screen active">
+  <div class="splash-icon">🌙</div>
+  <div>
+    <div class="splash-title">心境探店</div>
+    <div class="splash-sub">MoodPlace</div>
+    <div class="splash-tagline">不问哪里评分高 · 只问哪里懂你的心</div>
+  </div>
+  <button class="splash-btn" onclick="showScreen('input')">开始探索 →</button>
+</div>
+
+<!-- ═══════════════════════════════════════ INPUT ═══════════════════════════════════════ -->
+<div id="screen-input" class="screen">
+  <div class="input-header">
+    <h2>🌙 此刻你的心情</h2>
+    <p>告诉我你的感受，找到最懂你的地方</p>
+  </div>
+
+  <!-- emotion quick-select -->
+  <div style="width:100%">
+    <div class="emotion-label">快速选择情绪</div>
+    <div class="emotion-grid">
+      <div class="emotion-chip" data-type="tired" onclick="selectEmotion(this)">
+        <span class="chip-icon">😴</span>疲惫
+      </div>
+      <div class="emotion-chip" data-type="excited" onclick="selectEmotion(this)">
+        <span class="chip-icon">🔥</span>亢奋
+      </div>
+      <div class="emotion-chip" data-type="anxious" onclick="selectEmotion(this)">
+        <span class="chip-icon">😰</span>焦虑
+      </div>
+      <div class="emotion-chip" data-type="calm" onclick="selectEmotion(this)">
+        <span class="chip-icon">🍃</span>平静
+      </div>
+      <div class="emotion-chip" data-type="sad" onclick="selectEmotion(this)">
+        <span class="chip-icon">🌧</span>低落
+      </div>
+      <div class="emotion-chip" data-type="romantic" onclick="selectEmotion(this)">
+        <span class="chip-icon">🌹</span>浪漫
+      </div>
+    </div>
+  </div>
+
+  <!-- free-text -->
+  <div class="mood-input-wrap">
+    <textarea id="mood-text" class="mood-textarea"
+      placeholder="或者直接说说今天发生了什么…&#10;比如：被老板批评了，想找个安静的地方待着&#10;又比如：刚发了工资，想犒劳一下自己！"></textarea>
+  </div>
+
+  <!-- city -->
+  <div class="city-row">
+    <input id="city-input" class="city-input" type="text" placeholder="📍 输入城市（如：武汉）" value="">
+  </div>
+
+  <button class="go-btn" id="go-btn" onclick="startSearch()">✨ 为我寻找心仪之所</button>
+
+  <div class="history-link" onclick="showScreen('history')">查看探店记录 →</div>
+</div>
+
+<!-- ═══════════════════════════════════════ LOADING ═══════════════════════════════════════ -->
+<div id="screen-loading" class="screen">
+  <div class="loading-mood-tag">正在分析<span id="loading-emotion-tag">你的心情</span></div>
+
+  <div class="pipeline">
+    <div class="pipe-step" id="pipe-1">
+      <div class="pipe-icon">🧠</div>
+      <div class="pipe-text">
+        <h4>情绪感知</h4>
+        <p id="pipe-1-desc">解析你的情绪状态与需求</p>
+      </div>
+      <div class="pipe-status" id="pipe-1-status">⏳</div>
+    </div>
+    <div class="pipe-step" id="pipe-2">
+      <div class="pipe-icon">🗺️</div>
+      <div class="pipe-text">
+        <h4>场所匹配</h4>
+        <p id="pipe-2-desc">搜索最适合你此刻心境的真实地点</p>
+      </div>
+      <div class="pipe-status" id="pipe-2-status">⏳</div>
+    </div>
+    <div class="pipe-step" id="pipe-3">
+      <div class="pipe-icon">🎨</div>
+      <div class="pipe-text">
+        <h4>氛围生成</h4>
+        <p id="pipe-3-desc">为每个地点定制专属氛围图</p>
+      </div>
+      <div class="pipe-status" id="pipe-3-status">⏳</div>
+    </div>
+  </div>
+
+  <div class="loading-tip">蓝心大模型正在理解你的情绪<br>Doubao 图像模型为你绘制氛围意境</div>
+</div>
+
+<!-- ═══════════════════════════════════════ RESULTS ═══════════════════════════════════════ -->
+<div id="screen-results" class="screen">
+  <div class="results-header">
+    <h2>🌙 为你找到的心境之所</h2>
+    <div id="emotion-badge" class="emotion-badge"></div>
+    <div id="emotion-summary" class="emotion-summary"></div>
+  </div>
+
+  <!-- memory banner for multi-turn -->
+  <div class="memory-banner hidden" id="memory-banner">
+    <span>💡</span>
+    <span id="memory-text"></span>
+  </div>
+
+  <!-- VAD情绪解析面板 -->
+  <div class="vad-panel" id="vad-panel" style="display:none">
+    <div class="vad-panel-title">🔬 情绪向量解析 <span id="vad-context-tags"></span></div>
+    <div class="vad-rows">
+      <div class="vad-row">
+        <div class="vad-label">效价 Valence</div>
+        <div class="vad-bar-wrap"><div class="vad-bar valence" id="vad-bar-v" style="width:0%"></div></div>
+        <div class="vad-value" id="vad-val-v">-</div>
+      </div>
+      <div class="vad-row">
+        <div class="vad-label">唤醒度 Arousal</div>
+        <div class="vad-bar-wrap"><div class="vad-bar arousal" id="vad-bar-a" style="width:0%"></div></div>
+        <div class="vad-value" id="vad-val-a">-</div>
+      </div>
+      <div class="vad-row">
+        <div class="vad-label">主导感 Dominance</div>
+        <div class="vad-bar-wrap"><div class="vad-bar dominance" id="vad-bar-d" style="width:0%"></div></div>
+        <div class="vad-value" id="vad-val-d">-</div>
+      </div>
+    </div>
+    <div class="vad-space-needs" id="vad-space-needs"></div>
+  </div>
+
+  <div class="venue-cards" id="venue-cards"></div>
+
+  <div class="results-footer">
+    <button class="btn-secondary" onclick="showScreen('input')">🔄 换个心情再探</button>
+    <button class="btn-secondary" onclick="showScreen('history')">📖 探店记录</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ HISTORY ═══════════════════════════════════════ -->
+<div id="screen-history" class="screen">
+  <div class="history-header">
+    <h2>📖 探店记录</h2>
+    <button class="back-btn" onclick="showScreen('input')">← 返回</button>
+  </div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════ STATE ═══════════════════════════════
+const EMOTION_THEMES = {
+  tired:    { icon: '😴', label: '疲惫', color: '#7c3aed', bg: 'rgba(124,58,237,0.15)' },
+  excited:  { icon: '🔥', label: '亢奋', color: '#ea580c', bg: 'rgba(234,88,12,0.15)' },
+  anxious:  { icon: '😰', label: '焦虑', color: '#9333ea', bg: 'rgba(147,51,234,0.15)' },
+  calm:     { icon: '🍃', label: '平静', color: '#059669', bg: 'rgba(5,150,105,0.15)' },
+  sad:      { icon: '🌧', label: '低落', color: '#2563eb', bg: 'rgba(37,99,235,0.15)' },
+  romantic: { icon: '🌹', label: '浪漫', color: '#db2777', bg: 'rgba(219,39,119,0.15)' }
+};
+
+let selectedEmotionType = '';
+let lastResults = null;
+let isSearching = false;
+
+// image cache: localStorage, 24h TTL
+const IMG_CACHE_PREFIX = 'moodplace_img_';
+const IMG_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+function getCachedImage(key) {
+  try {
+    const raw = localStorage.getItem(IMG_CACHE_PREFIX + key);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > IMG_CACHE_TTL) { localStorage.removeItem(IMG_CACHE_PREFIX + key); return null; }
+    return obj.url;
+  } catch { return null; }
+}
+function setCachedImage(key, url) {
+  try { localStorage.setItem(IMG_CACHE_PREFIX + key, JSON.stringify({ url, ts: Date.now() })); } catch {}
+}
+function imgCacheKey(mood, city, idx) {
+  const raw = mood + '|' + city + '|' + idx;
+  return btoa(encodeURIComponent(raw)).substring(0, 24);
+}
+
+// history: localStorage
+const HISTORY_KEY = 'moodplace_history';
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+function saveHistory(entry) {
+  const hist = getHistory();
+  hist.unshift(entry);
+  if (hist.length > 20) hist.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+}
+
+// ═══════════════════════════════ UI HELPERS ═══════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'history') renderHistory();
+  window.scrollTo(0, 0);
+}
+
+function applyTheme(type) {
+  document.body.className = type ? 'theme-' + type : '';
+}
+
+function showToast(msg, duration = 4000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function selectEmotion(chip) {
+  document.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  selectedEmotionType = chip.dataset.type;
+  applyTheme(selectedEmotionType);
+}
+
+// ═══════════════════════════════ LOADING STEPS ═══════════════════════════════
+function setPipeStep(n, state, desc) {
+  const step = document.getElementById('pipe-' + n);
+  const status = document.getElementById('pipe-' + n + '-status');
+  const descEl = document.getElementById('pipe-' + n + '-desc');
+  step.className = 'pipe-step' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
+  if (state === 'active') status.innerHTML = '<span class="spinner"></span>';
+  else if (state === 'done') status.textContent = '✅';
+  else status.textContent = '⏳';
+  if (desc) descEl.textContent = desc;
+}
+function resetPipes() {
+  [1,2,3].forEach(n => setPipeStep(n, 'idle'));
+}
+
+// ═══════════════════════════════ MAIN SEARCH ═══════════════════════════════
+async function startSearch() {
+  if (isSearching) return;
+
+  const moodText = document.getElementById('mood-text').value.trim();
+  const city = document.getElementById('city-input').value.trim();
+
+  if (!moodText && !selectedEmotionType) {
+    showToast('请选择情绪或描述一下你的心情 😊'); return;
+  }
+  if (!city) {
+    showToast('请输入你所在的城市 📍'); return;
+  }
+
+  isSearching = true;
+  document.getElementById('go-btn').disabled = true;
+
+  // build user message
+  const emotionHint = selectedEmotionType ? `（情绪标签：${EMOTION_THEMES[selectedEmotionType]?.label}）` : '';
+  const userMsg = (moodText || '我有一种说不清的情绪') + emotionHint;
+  document.getElementById('loading-emotion-tag').textContent = city;
+
+  resetPipes();
+  showScreen('loading');
+
+  // Step 1: LLM emotion analysis
+  setPipeStep(1, 'active', '蓝心大模型感知你的情绪...');
+  let llmResult;
+  try {
+    llmResult = await callLLM(userMsg, city);
+  } catch (e) {
+    isSearching = false;
+    document.getElementById('go-btn').disabled = false;
+    showScreen('input');
+    showToast('情绪分析失败，请检查网络或稍后重试');
+    return;
+  }
+  setPipeStep(1, 'done', `检测到：${llmResult.emotion_tag}`);
+  applyTheme(llmResult.emotion_type || selectedEmotionType);
+
+  // Step 2: POI search (parallel for 3 venues)
+  setPipeStep(2, 'active', '正在搜索真实地点...');
+  const poiResults = await Promise.all(
+    llmResult.venues.map(v => fetchPOI(v.poi_keyword, city).catch(() => null))
+  );
+  setPipeStep(2, 'done', `找到 ${poiResults.filter(Boolean).length} 处心仪场所`);
+
+  // Step 3: Image generation (parallel, with cache)
+  setPipeStep(3, 'active', 'Doubao 正在绘制专属氛围图...');
+  const imagePromises = llmResult.venues.map((v, i) => {
+    const key = imgCacheKey(llmResult.emotion_tag + v.type, city, i);
+    const cached = getCachedImage(key);
+    if (cached) return Promise.resolve({ url: cached, fromCache: true });
+    return fetchImage(v.atmosphere_prompt, key).catch(() => ({ url: null }));
+  });
+  const images = await Promise.all(imagePromises);
+  setPipeStep(3, 'done', '氛围图绘制完成');
+
+  // build result data
+  const resultData = {
+    emotion_tag: llmResult.emotion_tag,
+    emotion_type: llmResult.emotion_type || selectedEmotionType || 'tired',
+    emotion_summary: llmResult.emotion_summary,
+    city,
+    venues: llmResult.venues.map((v, i) => ({
+      ...v,
+      poi: poiResults[i],
+      imageUrl: images[i]?.url || null
+    })),
+    timestamp: Date.now()
+  };
+
+  lastResults = resultData;
+  saveHistory({
+    emotion_tag: resultData.emotion_tag,
+    emotion_type: resultData.emotion_type,
+    emotion_summary: resultData.emotion_summary,
+    city,
+    timestamp: resultData.timestamp
+  });
+
+  renderResults(resultData);
+  isSearching = false;
+  document.getElementById('go-btn').disabled = false;
+  showScreen('results');
+
+  // check memory / multi-turn hint
+  checkMemoryHint(resultData.emotion_type);
+}
+
+// ═══════════════════════════════ API CALLS ═══════════════════════════════
+async function callLLM(userMsg, city) {
+  // A: 情境感知 — 注入当前时间段
+  const hour = new Date().getHours();
+  const timePeriod = hour < 6 ? '深夜' : hour < 12 ? '上午' : hour < 14 ? '午间' : hour < 18 ? '下午' : hour < 22 ? '晚间' : '夜晚';
+  const timeNote = `当前时间段：${timePeriod}（${hour}时）。请结合时间段调整场所推荐，例如深夜不推荐需要预约的场所，午间可考虑午休友好的安静环境。`;
+
+  const systemPrompt = `你是一个情绪感知探店顾问，基于VAD情绪模型（效价Valence/唤醒度Arousal/主导感Dominance）理解用户情绪，推荐最匹配的空间环境。
+
+${timeNote}
+
+必须严格以如下JSON格式回复，不要有任何其他文字：
+{
+  "emotion_tag": "用2-4个字描述情绪",
+  "emotion_type": "tired|excited|anxious|calm|sad|romantic 选一个最接近的",
+  "emotion_summary": "对用户情绪的简短共情（15字以内）",
+  "vad": {
+    "valence": 0到10的整数（0=极负面，10=极正面）,
+    "arousal": 0到10的整数（0=极平静，10=极亢奋）,
+    "dominance": 0到10的整数（0=完全失控，10=完全掌控）
+  },
+  "space_needs": "根据VAD推导出的空间需求（20字以内，如：低噪音、柔和光线、私密座位）",
+  "venues": [
+    {
+      "type": "场所类型（如：安静的日式咖啡馆）",
+      "poi_keyword": "POI搜索关键词（简短，如：咖啡馆）",
+      "atmosphere_prompt": "英文氛围图生成提示词，80字以内，描述场所的光线、装潢、氛围",
+      "match_reason": "为什么这个地方适合你此刻的心情（20字以内）"
+    },
+    {},
+    {}
+  ]
+}
+
+城市：${city}
+确保3个场所类型各不相同，poi_keyword要适合在${city}搜索到真实地点。`;
+
+  const resp = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'Volc-DeepSeek-V3.2',
+      reasoning_effort: 'minimal',
+      max_tokens: 800,
+      temperature: 0.8,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMsg }
+      ]
+    })
+  });
+
+  if (!resp.ok) throw new Error('LLM request failed: ' + resp.status);
+  const data = await resp.json();
+
+  const content = data?.choices?.[0]?.message?.content || '';
+  // extract JSON from response (handle markdown code blocks)
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('LLM returned invalid JSON: ' + content);
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function fetchPOI(keyword, city) {
+  const params = new URLSearchParams({ keywords: keyword, city });
+  const resp = await fetch('/api/poi?' + params.toString());
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  const pois = data?.pois;
+  if (!pois || pois.length === 0) return null;
+  // pick first poi
+  return pois[0];
+}
+
+async function fetchImage(prompt, cacheKey) {
+  // enhanced prompt for better atmosphere
+  const enhancedPrompt = prompt + ', cinematic lighting, cozy interior, professional photography, high quality, detailed, atmospheric';
+  const resp = await fetch('/api/image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'Doubao-Seedream-4.5',
+      prompt: enhancedPrompt,
+      parameters: { size: '1920x1920' }
+    })
+  });
+  if (!resp.ok) return { url: null };
+  const data = await resp.json();
+  if (data.code !== 0) return { url: null };
+  const url = data?.data?.images?.[0]?.url || data?.data?.image || null;
+  if (url) setCachedImage(cacheKey, url);
+  return { url };
+}
+
+// ═══════════════════════════════ CHECKIN ═══════════════════════════════
+const CHECKIN_KEY = 'moodplace_checkins';
+function getCheckins() {
+  try { return JSON.parse(localStorage.getItem(CHECKIN_KEY) || '[]'); } catch { return []; }
+}
+function saveCheckin(venueName, afterMood) {
+  const list = getCheckins();
+  list.unshift({ venueName, afterMood, ts: Date.now() });
+  if (list.length > 50) list.pop();
+  localStorage.setItem(CHECKIN_KEY, JSON.stringify(list));
+}
+function handleCheckin(cardIndex, venueName, chipEl) {
+  const afterMood = chipEl.dataset.mood;
+  saveCheckin(venueName, afterMood);
+  const area = document.getElementById('checkin-area-' + cardIndex);
+  area.innerHTML = `<div class="checkin-done">✅ 已记录心情变化：去之前 → ${document.getElementById('emotion-badge').textContent}，探店后 → ${chipEl.textContent}</div>`;
+}
+
+// ═══════════════════════════════ RENDER RESULTS ═══════════════════════════════
+function renderResults(data) {
+  const theme = EMOTION_THEMES[data.emotion_type] || EMOTION_THEMES.tired;
+
+  // badge
+  const badge = document.getElementById('emotion-badge');
+  badge.textContent = theme.icon + ' ' + data.emotion_tag;
+  badge.style.background = theme.bg;
+  badge.style.color = theme.color;
+  badge.style.border = '1px solid ' + theme.color + '55';
+
+  // summary
+  document.getElementById('emotion-summary').textContent = data.emotion_summary || '';
+
+  // B: VAD面板
+  const vad = data.vad;
+  if (vad) {
+    const panel = document.getElementById('vad-panel');
+    panel.style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('vad-bar-v').style.width = (vad.valence * 10) + '%';
+      document.getElementById('vad-bar-a').style.width = (vad.arousal * 10) + '%';
+      document.getElementById('vad-bar-d').style.width = (vad.dominance * 10) + '%';
+    }, 100);
+    document.getElementById('vad-val-v').textContent = vad.valence;
+    document.getElementById('vad-val-a').textContent = vad.arousal;
+    document.getElementById('vad-val-d').textContent = vad.dominance;
+    document.getElementById('vad-space-needs').textContent = '📐 空间需求：' + (data.space_needs || '');
+    // A: 时间段标签
+    const hour = new Date().getHours();
+    const timePeriod = hour < 6 ? '深夜' : hour < 12 ? '上午' : hour < 14 ? '午间' : hour < 18 ? '下午' : hour < 22 ? '晚间' : '夜晚';
+    document.getElementById('vad-context-tags').innerHTML =
+      `<span class="context-tag">🕐 ${timePeriod}</span>`;
+  }
+
+  // cards
+  const container = document.getElementById('venue-cards');
+  container.innerHTML = '';
+
+  data.venues.forEach((v, i) => {
+    const poi = v.poi;
+    const venueName = poi?.name || v.type;
+    const venueAddress = poi ? `${poi.district || ''}${poi.address || ''}` : '地址获取中...';
+    const venueCity = poi?.city || data.city;
+    const location = poi?.location || '';
+
+    const card = document.createElement('div');
+    card.className = 'venue-card';
+
+    // gaode deep link
+    const mapUrl = location
+      ? `https://uri.amap.com/marker?position=${location}&name=${encodeURIComponent(venueName)}&src=MoodPlace&coordinate=gaode`
+      : `https://uri.amap.com/search?keywords=${encodeURIComponent(venueName)}&city=${encodeURIComponent(venueCity)}&src=MoodPlace`;
+
+    card.innerHTML = `
+      <div class="venue-img-wrap">
+        ${v.imageUrl
+          ? `<img class="venue-img loaded" src="${v.imageUrl}" alt="${venueName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''
+        }
+        <div class="img-skeleton" id="skeleton-${i}" style="${v.imageUrl ? 'display:none' : ''}"></div>
+        <div class="img-placeholder" id="placeholder-${i}" style="${v.imageUrl ? 'display:none' : ''}">
+          <span class="ph-icon">🎨</span>
+          <span>氛围图生成中...</span>
+        </div>
+        <div class="img-gen-status" id="imgstatus-${i}">${v.imageUrl ? (v.fromCache ? '⚡ 已缓存' : '✨ AI生成') : '⏳ 生成中'}</div>
+      </div>
+      <div class="venue-body">
+        <div class="venue-index">PLACE ${i + 1}</div>
+        <div class="venue-name">${venueName}</div>
+        <div class="venue-address">📍 ${venueAddress}</div>
+        <div class="venue-type-tag">🏷 ${v.type}</div>
+        <div class="venue-reason">${v.match_reason}</div>
+        <button class="go-btn-card" onclick="window.open('${mapUrl}', '_blank')">
+          就去这里 →
+        </button>
+        <div class="checkin-area" id="checkin-area-${i}">
+          <div class="checkin-prompt">探店后，你感觉怎么样？</div>
+          <div class="checkin-emotions">
+            <button class="checkin-chip" data-mood="better" onclick="handleCheckin(${i},'${venueName.replace(/'/g,"\\'")}',this)">😊 好多了</button>
+            <button class="checkin-chip" data-mood="same" onclick="handleCheckin(${i},'${venueName.replace(/'/g,"\\'")}',this)">😐 没变化</button>
+            <button class="checkin-chip" data-mood="worse" onclick="handleCheckin(${i},'${venueName.replace(/'/g,"\\'")}',this)">😔 更糟了</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════ MEMORY / MULTI-TURN ═══════════════════════════════
+function checkMemoryHint(currentType) {
+  const hist = getHistory();
+  if (hist.length < 3) { document.getElementById('memory-banner').classList.add('hidden'); return; }
+
+  // count recent emotion types (last 5 records, excluding current)
+  const recent = hist.slice(1, 6);
+  const counts = {};
+  recent.forEach(h => { counts[h.emotion_type] = (counts[h.emotion_type] || 0) + 1; });
+
+  const theme = EMOTION_THEMES[currentType];
+  const banner = document.getElementById('memory-banner');
+  const text = document.getElementById('memory-text');
+
+  // if same type appears 2+ times recently
+  if (counts[currentType] >= 2) {
+    const typeLabel = EMOTION_THEMES[currentType]?.label || currentType;
+    text.textContent = `你最近几次探店都选择了「${typeLabel}」相关的地方，看来这段时间情绪比较固定呢～`;
+    banner.classList.remove('hidden');
+  } else if (hist.length >= 5) {
+    // multi-emotion summary
+    const types = Object.keys(counts).map(t => EMOTION_THEMES[t]?.label || t);
+    if (types.length >= 3) {
+      text.textContent = `你最近探索了${types.join('、')}等多种心境，情绪挺丰富的 ✨`;
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+// ═══════════════════════════════ HISTORY RENDER ═══════════════════════════════
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const hist = getHistory();
+
+  if (hist.length === 0) {
+    list.innerHTML = `<div class="history-empty"><div class="empty-icon">🌙</div><div>还没有探店记录<br>快去发现属于你的心境之所吧</div></div>`;
+    return;
+  }
+
+  list.innerHTML = hist.map((h, i) => {
+    const theme = EMOTION_THEMES[h.emotion_type] || EMOTION_THEMES.tired;
+    const date = new Date(h.timestamp);
+    const timeStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+    return `
+      <div class="history-item" onclick="replayHistory(${i})">
+        <div class="history-item-icon">${theme.icon}</div>
+        <div class="history-item-body">
+          <h4>${h.emotion_tag} · ${h.city}</h4>
+          <p>${h.emotion_summary || ''}</p>
+        </div>
+        <div class="history-item-meta">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function replayHistory(idx) {
+  const hist = getHistory();
+  const h = hist[idx];
+  if (!h) return;
+  // pre-fill city and select emotion
+  document.getElementById('city-input').value = h.city;
+  document.getElementById('mood-text').value = h.emotion_summary || '';
+  selectedEmotionType = h.emotion_type;
+  document.querySelectorAll('.emotion-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.type === h.emotion_type);
+  });
+  applyTheme(h.emotion_type);
+  showScreen('input');
+}
+
+// ═══════════════════════════════ TEXTAREA auto-resize ═══════════════════════════════
+document.getElementById('mood-text').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.max(100, this.scrollHeight) + 'px';
+});
+
+// Enter in city input triggers search
+document.getElementById('city-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') startSearch();
+});
+</script>
+</body>
+</html>
