@@ -4,10 +4,12 @@ import uuid
 import time
 import json
 import os
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder='.')
+CORS(app)
 
-APP_KEY = os.getenv('VIVO_APP_KEY', '')
+APP_KEY = os.environ.get('VIVO_API_KEY', '')
 BASE_URL = "https://api-ai.vivo.com.cn"
 
 
@@ -88,6 +90,11 @@ def poi():
 
 
 if __name__ == '__main__':
+    if not APP_KEY:
+        print("⚠️ 警告：未设置 VIVO_API_KEY 环境变量")
+        print("   本地运行：export VIVO_API_KEY='你的密钥'（Mac/Linux）")
+        print("   本地运行：set VIVO_API_KEY=你的密钥（Windows）")
+        print("   云端部署：在 Render Dashboard → Environment 中配置")
     print("🌙 心境探店 MoodPlace 后端启动中...")
     print("📍 访问地址: http://localhost:5001")
     app.run(debug=True, port=5001, host='0.0.0.0')

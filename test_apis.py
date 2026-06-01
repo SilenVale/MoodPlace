@@ -8,8 +8,9 @@ import requests
 import uuid
 import time
 import json
+import os
 
-APP_KEY = "sk-xuanji-2026641233-dEtmaWhEeHdHbXh2amZsQQ=="
+APP_KEY = os.environ.get('VIVO_API_KEY', '')
 BASE_URL = "https://api-ai.vivo.com.cn"
 
 def sep(title):

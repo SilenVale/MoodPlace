@@ -1,127 +1,111 @@
-# 🌙 心境探店 MoodPlace
+# 🌙 心境探店 · MoodPlace
 
-> 不问哪里评分高，只问哪里懂你的心
+> 不问哪里评分高，只问哪里懂你的心。
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**心境探店（MoodPlace）** 是一款以情绪为入口、以 AI 为引擎的个性化场所发现应用。它首创将心理学 VAD 情绪三维模型与 AIGC 技术深度融合，通过理解用户当下的情绪状态，推荐最契合心境的真实场所，并为每一处推荐生成专属 AI 氛围图。
-
-本项目为 **vivo 第三届 AIGC 创新应用大赛** 参赛作品。
+**直接访问体验链接**：`[部署完成后填入]`
 
 ---
 
-## ✨ 核心特性
+## 产品简介
 
-- 🧠 **VAD 情绪向量解析** — 基于 Valence-Arousal-Dominance 三维情绪模型，将抽象情绪转化为结构化向量
-- 🕐 **情境感知推荐** — 自动注入时间段上下文（深夜/午间等），动态调整推荐策略
-- 🎨 **AI 氛围图生成** — 调用 Doubao-Seedream-4.5 为每个推荐场所实时生成专属氛围图
-- 🗺️ **真实 POI 检索** — 集成地理搜索服务，推荐真实可导航的场所
-- 💾 **智能本地缓存** — 氛围图 24h 本地缓存，避免重复生成消耗配额
-- 📝 **探店情绪反馈闭环** — 记录探店前后情绪变化，积累个性化数据
-- 💡 **长程情绪陪伴** — 历史探店记忆回溯，主动展示情绪洞察提示
+心境探店是一款基于 vivo 蓝心大模型的情绪驱动探店工具。
+
+用户用自然语言描述当下情绪，蓝心大模型将其解析为 VAD 三维向量（效价/唤醒度/掌控感），自动匹配最适合当前情绪状态的空间环境，并生成专属氛围意境图，帮助用户在 30 秒内找到"此刻最想去的地方"。
 
 ---
 
-## 🖼️ 界面预览
+## 🚀 快速体验
 
-| 启动页 | 情绪选择 | AI 推理中 | 结果页 |
-|--------|----------|-----------|--------|
-| 沉浸式宇宙星云视觉 | 6 种情绪快捷标签 + 自然语言描述 | 三阶段动态进度管道 | VAD 面板 + 氛围图 + 场所卡片 |
+### 方式一：在线访问（推荐）
 
----
-
-## 🚀 快速启动
-
-### 环境要求
-
-- Python 3.8+
-- vivo AI 开放平台 API Key（[申请地址](https://ai.vivo.com.cn/)）
-
-### 安装与运行
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/SilenVale/MoodPlace.git
-cd MoodPlace
-
-# 2. 安装依赖
-pip install -r requirements.txt
-
-# 3. 配置环境变量
-cp .env.example .env
-# 编辑 .env，填入你的 vivo API Key
-
-# 4. 启动服务
-python server.py
-
-# 5. 浏览器打开
-# http://localhost:5001
+打开浏览器访问：
 ```
+[部署完成后填入]
+```
+
+> 首次加载约 30 秒（Render 免费版冷启动），之后正常。
+
+### 方式二：本地运行
+
+**Mac / Linux：**
+```bash
+cd prototype/v4
+bash run.sh
+```
+
+**Windows：**
+```cmd
+cd prototype\v4
+run.bat
+```
+
+浏览器将自动打开 `http://localhost:5001`。
 
 ---
 
 ## 🏗️ 技术架构
 
 ```
-┌─────────────────────────────────────┐
-│  Browser (SPA)                      │  ← 单页应用，沉浸式交互
-├─────────────────────────────────────┤
-│  Flask Proxy Server (:5001)         │  ← 统一 API 代理与编排
-├─────────────────────────────────────┤
-│  vivo AI API                        │
-│  ├── /v1/chat/completions           │  ← 蓝心大模型（情绪分析）
-│  ├── /api/v1/image_generation       │  ← Doubao 图像生成
-│  └── /search/geo                    │  ← POI 地理搜索
-└─────────────────────────────────────┘
+浏览器 (HTML/JS SPA)
+    ↓ HTTP
+Flask 代理服务器 (Python)
+    ↓ 转发
+vivo AI 开放平台
+    ├── 蓝心大模型 —— 情绪理解 → VAD 向量输出
+    ├── Doubao-Seedream 4.5 —— 氛围图生成
+    └── 高德 POI —— 附近场所查询
 ```
-
-### 技术栈
-
-| 层级 | 技术 |
-|------|------|
-| 前端 | HTML5 + CSS3 + Vanilla JS（单页应用，无框架依赖） |
-| 后端 | Python + Flask |
-| 大模型 | vivo 蓝心大模型（Volc-DeepSeek-V3.2） |
-| 图像生成 | Doubao-Seedream-4.5 |
-| 情绪模型 | VAD（Valence-Arousal-Dominance） |
-| 地图服务 | 高德地图 DeepLink |
 
 ---
 
-## 📁 项目结构
+## 🧠 大模型 API 调用说明
+
+| 模块 | 调用模型/API | 功能描述 |
+|------|------------|---------|
+| 情绪理解 | vivo 蓝心大模型 (Volc-DeepSeek-V3.2) | 将用户情绪描述解析为 VAD 三维向量 |
+| 氛围图生成 | Doubao-Seedream 4.5 | 基于场所类型生成 1920×1920 情绪氛围图 |
+| 场所查询 | vivo 高德 POI API | 按城市+关键词搜索附近真实场所 |
+
+**Prompt 工程亮点**：
+- System Prompt 内嵌 VAD 心理学模型定义（效价/唤醒度/掌控感）
+- 自动注入当前时间段情境（深夜/上午/午间/下午/晚间/夜晚）
+- 严格 JSON 格式约束，确保输出可被程序直接解析
+
+---
+
+## 📦 项目结构
 
 ```
-MoodPlace/
-├── index.html          # 前端单页应用
-├── server.py           # Flask 代理服务器
+prototype/v4/
+├── index.html          # 前端单页面应用（HTML/JS/CSS）
+├── server.py           # Flask 后端代理（API 转发 + CORS）
 ├── requirements.txt    # Python 依赖
-├── test_apis.py        # API 接口测试脚本
-├── .env.example        # 环境变量模板
-├── .gitignore          # Git 忽略规则
-└── README.md           # 项目说明
+├── Procfile            # Render 部署配置
+├── run.sh              # Mac/Linux 一键启动
+├── run.bat             # Windows 一键启动
+├── test_apis.py        # API 连通性测试
+├── test_real_prompt.py # 前端真实 Prompt 测试
+└── README.md           # 本文件
 ```
 
 ---
 
-## 🎯 核心交互流程
+## 🔧 部署到 Render（云端）
 
-1. **情绪表达** — 选择情绪标签或自由描述心情
-2. **AI 解析** — 蓝心大模型解析 VAD 情绪向量 + 空间需求
-3. **场所匹配** — 结合城市 + 时间段检索真实 POI
-4. **氛围呈现** — 为每个场所生成专属 AI 氛围图
-5. **一键导航** — 点击跳转高德地图，直接前往
-6. **情绪反馈** — 探店后记录心情变化，形成闭环
-
----
-
-## ⚠️ 注意事项
-
-- 图像生成有每日配额限制（已内置 24h 本地缓存机制）
-- 首次图像生成约需 10-30 秒，请耐心等待
-- POI 搜索返回 `statusCode: 4` 属正常现象，以 `pois` 数组为准
+1. 将代码推送到 GitHub
+2. 登录 [Render](https://render.com) → New Web Service → 连接 GitHub 仓库
+3. 配置环境变量（Dashboard → Environment）：
+   - `VIVO_API_KEY` = 你的 vivo API 密钥
+4. 点击 Deploy，等待 2-3 分钟
+5. 获取分配的 `.onrender.com` 域名
 
 ---
 
 ## 📄 License
 
-MIT License © 2026 MoodPlace Team
+本项目为 2026 全国大学生 AIGC 创新大赛参赛作品的 demo 版本。
+
+---
+
+**团队成员**：心境探店团队
+**竞赛**：2026 全国大学生 AIGC 创新大赛 · vivo 赛道
